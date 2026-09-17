@@ -1,0 +1,13 @@
+{
+  "name": "SafeHer - Live Emergency Google Maps",
+  "description": "Worldwide free personal safety app with live Google Maps emergency tracking, family safety drills with serial codes, audible siren, and international emergency dispatch numbers.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
+
