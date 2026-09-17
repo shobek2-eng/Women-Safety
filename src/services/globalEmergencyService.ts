@@ -71,9 +71,11 @@ export const GLOBAL_COUNTRIES: CountryEmergencyInfo[] = [
     flag: '🇮🇳',
     emergencyNumber: '112',
     policeNumber: '100',
-    notes: 'National Emergency Response Support System (112 / 100).',
+    secondaryNumber: '1091',
+    ambulanceNumber: '108',
+    notes: 'National Emergency Response Support System (112), Police (100), Women Helpline (1091), Sakhi / Distress (181).',
     continent: 'Asia',
-    defaultCity: { name: 'Mumbai, India', lat: 19.0760, lng: 72.8777 },
+    defaultCity: { name: 'New Delhi, India', lat: 28.6139, lng: 77.2090 },
   },
   {
     code: 'AU',
@@ -260,8 +262,9 @@ export function detectUserCountry(): CountryEmergencyInfo {
     }
   }
 
-  // Default to US or Worldwide Standard
-  return GLOBAL_COUNTRIES[1] || GLOBAL_COUNTRIES[0];
+  // Default to India (Specialized for Indian Emergency Infrastructure)
+  const india = GLOBAL_COUNTRIES.find((c) => c.code === 'IN');
+  return india || GLOBAL_COUNTRIES[0];
 }
 
 export function saveSelectedCountry(countryCode: string): void {

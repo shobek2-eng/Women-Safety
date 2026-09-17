@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { EmergencyFacility, EmergencySession } from '../types';
 import { GoogleMapView } from './GoogleMapView';
+import { SessionAnalyticsView } from './SessionAnalyticsView';
 import {
   ShieldAlert,
   Phone,
@@ -24,8 +25,18 @@ import {
   Copy,
   Check,
   Smartphone,
+  Download,
+  FileText,
+  BarChart3,
 } from 'lucide-react';
 import { getCardinalDirection } from '../services/googleMapsLoader';
+import {
+  downloadEvidenceDossierJSON,
+  downloadPoliceReportTXT,
+  downloadSingleChunk,
+  downloadVideoFile,
+  generateTacticalEvidenceVideoBlob,
+} from '../services/evidenceService';
 
 interface RecipientEmergencyViewProps {
   session: EmergencySession;
@@ -44,8 +55,9 @@ export const RecipientEmergencyView: React.FC<RecipientEmergencyViewProps> = ({
     facilities[0] || null
   );
   const [autoCenter, setAutoCenter] = useState(true);
-  const [activeRecipientTab, setActiveRecipientTab] = useState<'map' | 'stream' | 'evidence'>('map');
+  const [activeRecipientTab, setActiveRecipientTab] = useState<'map' | 'stream' | 'evidence' | 'analytics'>('map');
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [downloadFeedback, setDownloadFeedback] = useState<string | null>(null);
 
   const isGpsLost = session.status === 'gps_lost';
   const targetLoc = isGpsLost
@@ -61,6 +73,42 @@ export const RecipientEmergencyView: React.FC<RecipientEmergencyViewProps> = ({
     navigator.clipboard.writeText(hash);
     setCopiedHash(hash);
     setTimeout(() => setCopiedHash(null), 2000);
+  };
+
+  const [isExportingVideo, setIsExportingVideo] = useState(false);
+
+  const handleDownloadVideoEvidence = async () => {
+    try {
+      setIsExportingVideo(true);
+      setDownloadFeedback('Packaging emergency video evidence (.webm)...');
+      const blob = await generateTacticalEvidenceVideoBlob(session);
+      downloadVideoFile(blob, session.incidentId);
+      setDownloadFeedback('Emergency Video Evidence (.webm) downloaded successfully');
+    } catch (err) {
+      console.error('Video download error:', err);
+      setDownloadFeedback('Failed to download video evidence.');
+    } finally {
+      setIsExportingVideo(false);
+      setTimeout(() => setDownloadFeedback(null), 3500);
+    }
+  };
+
+  const handleDownloadPoliceReport = () => {
+    downloadPoliceReportTXT(session);
+    setDownloadFeedback('Police incident report (.txt) downloaded successfully');
+    setTimeout(() => setDownloadFeedback(null), 3500);
+  };
+
+  const handleDownloadDossierJSON = () => {
+    downloadEvidenceDossierJSON(session);
+    setDownloadFeedback('Cryptographic evidence dossier (.json) downloaded successfully');
+    setTimeout(() => setDownloadFeedback(null), 3500);
+  };
+
+  const handleDownloadChunk = (chunk: any) => {
+    downloadSingleChunk(chunk);
+    setDownloadFeedback(`Chunk #${chunk.sequenceNumber} package downloaded`);
+    setTimeout(() => setDownloadFeedback(null), 3000);
   };
 
   return (
@@ -217,6 +265,19 @@ export const RecipientEmergencyView: React.FC<RecipientEmergencyViewProps> = ({
         >
           <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
           <span>Evidence Ledger ({session.evidenceChunks?.length || 0})</span>
+        </button>
+
+        <button
+          id="btn-recipient-tab-analytics"
+          onClick={() => setActiveRecipientTab('analytics')}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border ${
+            activeRecipientTab === 'analytics'
+              ? 'bg-sky-950/80 text-sky-300 border-sky-600/80 shadow'
+              : 'bg-stone-900/60 text-stone-400 border-stone-800 hover:text-stone-200'
+          }`}
+        >
+          <BarChart3 className="w-3.5 h-3.5 text-sky-400" />
+          <span>GPS Analytics & Accuracy</span>
         </button>
       </div>
 
@@ -383,6 +444,64 @@ export const RecipientEmergencyView: React.FC<RecipientEmergencyViewProps> = ({
                 </span>
               </div>
 
+              {/* Download Evidence Dossier Banner */}
+              <div className="bg-stone-950 border border-stone-800/90 rounded-xl p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Download className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-bold text-stone-200">
+                      Download Incident Evidence Packets
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800/60">
+                    ADMISSIBLE FOR POLICE & FIR
+                  </span>
+                </div>
+
+                {downloadFeedback && (
+                  <div className="p-2 rounded-lg bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 text-xs flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>{downloadFeedback}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleDownloadPoliceReport}
+                    className="p-2.5 rounded-lg bg-stone-900 hover:bg-stone-800 border border-rose-900/60 hover:border-rose-500 text-left transition flex items-center justify-between"
+                  >
+                    <div>
+                      <div className="text-xs font-bold text-rose-300 flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5 text-rose-400" />
+                        Police Incident Report (.txt)
+                      </div>
+                      <div className="text-[10px] text-stone-400 mt-0.5">
+                        FIR & station ready format (100/112/1091)
+                      </div>
+                    </div>
+                    <Download className="w-3.5 h-3.5 text-rose-400 shrink-0 ml-2" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleDownloadDossierJSON}
+                    className="p-2.5 rounded-lg bg-stone-900 hover:bg-stone-800 border border-sky-900/60 hover:border-sky-500 text-left transition flex items-center justify-between"
+                  >
+                    <div>
+                      <div className="text-xs font-bold text-sky-300 flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-sky-400" />
+                        Forensic JSON Dossier (.json)
+                      </div>
+                      <div className="text-[10px] text-stone-400 mt-0.5">
+                        Complete SHA-256 ledger & GPS track
+                      </div>
+                    </div>
+                    <Download className="w-3.5 h-3.5 text-sky-400 shrink-0 ml-2" />
+                  </button>
+                </div>
+              </div>
+
               {/* Chunks List */}
               <div className="space-y-2">
                 <div className="text-xs font-bold text-stone-400 uppercase tracking-wider">
@@ -431,6 +550,16 @@ export const RecipientEmergencyView: React.FC<RecipientEmergencyViewProps> = ({
                         </div>
 
                         <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadChunk(chunk)}
+                            className="p-1.5 bg-stone-900 hover:bg-stone-800 rounded-lg text-stone-400 hover:text-emerald-400 transition flex items-center gap-1 text-[10px] font-bold border border-stone-800"
+                            title={`Download Chunk #${chunk.sequenceNumber}`}
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Download</span>
+                          </button>
+
                           <div className="text-right text-[10px] text-stone-400">
                             <div className="text-emerald-400 font-bold">
                               {(chunk.storageNodes || []).filter((n) => n.status === 'verified' || n.status === 'replicated').length || 3} / 3 Nodes Synced
@@ -445,6 +574,13 @@ export const RecipientEmergencyView: React.FC<RecipientEmergencyViewProps> = ({
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* TAB 4: GPS Telemetry & Accuracy Analytics */}
+          {activeRecipientTab === 'analytics' && (
+            <div className="flex-1 w-full">
+              <SessionAnalyticsView session={session} />
             </div>
           )}
         </div>
@@ -500,6 +636,55 @@ export const RecipientEmergencyView: React.FC<RecipientEmergencyViewProps> = ({
               <div className="text-[10px] text-stone-400 mt-1 flex items-center gap-1">
                 <Compass className="w-3 h-3 text-rose-400" />
                 <span>Heading: {getCardinalDirection(targetLoc.heading)}</span>
+              </div>
+            </div>
+
+            {/* Quick Evidence Download Bar for Emergency Responders / Contacts */}
+            <div className="pt-2 border-t border-stone-800 space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-bold text-stone-300">
+                <span className="flex items-center gap-1 text-emerald-400">
+                  <Download className="w-3.5 h-3.5" />
+                  Evidence Quick Download
+                </span>
+                <span className="font-mono text-[10px] text-stone-400">
+                  {session.evidenceChunks?.length || 0} Chunks
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-1.5">
+                <button
+                  id="btn-recipient-download-video"
+                  type="button"
+                  onClick={handleDownloadVideoEvidence}
+                  disabled={isExportingVideo}
+                  className="px-2 py-1.5 rounded-lg bg-stone-950 hover:bg-stone-800 border border-stone-800 hover:border-emerald-500/60 text-stone-200 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
+                  title="Download Emergency Video Evidence (.webm)"
+                >
+                  <Video className="w-3 h-3 text-emerald-400" />
+                  <span>{isExportingVideo ? 'Saving...' : 'Video'}</span>
+                </button>
+
+                <button
+                  id="btn-recipient-download-police-report"
+                  type="button"
+                  onClick={handleDownloadPoliceReport}
+                  className="px-2 py-1.5 rounded-lg bg-stone-950 hover:bg-stone-800 border border-stone-800 hover:border-rose-500/60 text-stone-200 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer"
+                  title="Download Police / FIR Report"
+                >
+                  <FileText className="w-3 h-3 text-rose-400" />
+                  <span>Report</span>
+                </button>
+
+                <button
+                  id="btn-recipient-download-dossier"
+                  type="button"
+                  onClick={handleDownloadDossierJSON}
+                  className="px-2 py-1.5 rounded-lg bg-stone-950 hover:bg-stone-800 border border-stone-800 hover:border-sky-500/60 text-stone-200 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer"
+                  title="Download Cryptographic JSON Ledger"
+                >
+                  <Lock className="w-3 h-3 text-sky-400" />
+                  <span>Dossier</span>
+                </button>
               </div>
             </div>
           </div>

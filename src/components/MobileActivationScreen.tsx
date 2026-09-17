@@ -46,10 +46,10 @@ const COMMON_DIAL_CODES = [
 ];
 
 export const MobileActivationScreen: React.FC<MobileActivationScreenProps> = ({ onActivated }) => {
-  const [countryCode, setCountryCode] = useState<string>('+1');
+  const [countryCode, setCountryCode] = useState<string>('+91');
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [userName, setUserName] = useState<string>('Elena Vance');
+  const [userName, setUserName] = useState<string>('Priya Sharma');
   const [emergencyPin, setEmergencyPin] = useState<string>('1234');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isActivating, setIsActivating] = useState<boolean>(false);
@@ -60,10 +60,10 @@ export const MobileActivationScreen: React.FC<MobileActivationScreenProps> = ({ 
   const deviceModel = detectDeviceModel();
 
   const handleQuickDemoFill = () => {
-    setCountryCode('+1');
-    setPhoneNumber('(555) 019-2834');
-    setPassword('password123');
-    setUserName('Elena Vance');
+    setCountryCode('+91');
+    setPhoneNumber('98765 43210');
+    setPassword('SafeHer2026!');
+    setUserName('Priya Sharma');
     setEmergencyPin('1234');
     setErrorMessage(null);
   };

@@ -67,14 +67,14 @@ class VoiceTriggerService {
   }
 
   public processTranscript(text: string) {
-    // Check for target trigger word
+    // Check for target emergency trigger words: "rape", "bachao" (Hindi/India distress), "help", or "police"
     const cleaned = text.toLowerCase();
-    const regex = /\brape\b/g;
+    const regex = /\b(rape|bachao|help|police)\b/g;
     const matches = cleaned.match(regex);
 
     if (matches && matches.length > 0) {
       for (let i = 0; i < matches.length; i++) {
-        this.registerKeywordDetection('rape');
+        this.registerKeywordDetection(matches[i]);
       }
     }
   }

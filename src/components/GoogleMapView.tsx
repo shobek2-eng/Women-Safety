@@ -95,6 +95,14 @@ export const GoogleMapView: React.FC<GoogleMapViewProps> = ({
         const google = await loadGoogleMaps();
         if (!isMounted || !mapContainerRef.current) return;
 
+        if (!google?.maps?.Map || typeof google.maps.Map !== 'function') {
+          console.warn('Google Maps Map constructor unavailable, switching to Tactical Radar Map.');
+          if (isMounted) {
+            setUseTacticalRadar(true);
+          }
+          return;
+        }
+
         const initialCenter = {
           lat: currentLocation.latitude,
           lng: currentLocation.longitude,
@@ -117,9 +125,9 @@ export const GoogleMapView: React.FC<GoogleMapViewProps> = ({
         isMapLoadedRef.current = true;
         setMapLoaded(true);
       } catch (err: any) {
-        console.error('Error initializing Google Map:', err);
+        console.warn('Google Maps Platform initialization notice:', err?.message || err);
         if (isMounted) {
-          setMapError(err?.message || 'Failed to initialize Google Maps Platform.');
+          setMapError(err?.message || 'Google Maps Platform unavailable. Switched to Tactical Radar Map.');
           // Auto-fallback so the user is NEVER blocked
           setUseTacticalRadar(true);
         }

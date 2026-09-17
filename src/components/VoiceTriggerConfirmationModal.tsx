@@ -65,7 +65,7 @@ export const VoiceTriggerConfirmationModal: React.FC<VoiceTriggerConfirmationMod
             ACTIVATING SAFEHER EMERGENCY
           </h2>
           <p className="text-xs text-stone-300 mt-1">
-            "RAPE × 3" detected. Emergency evidence recording & dispatch will activate in:
+            Distress voice trigger (e.g. “BACHAO × 3” / “RAPE × 3”) detected. Emergency evidence recording & dispatch will activate in:
           </p>
         </div>
 

@@ -68,10 +68,10 @@ export const PrivacyStandbyView: React.FC<PrivacyStandbyViewProps> = ({
   const [selectedCityPreset, setSelectedCityPreset] = useState<string>('current');
 
   const cityPresets: Record<string, { lat: number; lng: number; name: string }> = {
+    delhi: { lat: 28.6139, lng: 77.2090, name: 'New Delhi (NCR)' },
+    mumbai: { lat: 19.0760, lng: 72.8777, name: 'Mumbai, MH' },
+    bengaluru: { lat: 12.9716, lng: 77.5946, name: 'Bengaluru, KA' },
     sf: { lat: 37.7749, lng: -122.4194, name: 'San Francisco, CA' },
-    nyc: { lat: 40.7128, lng: -74.006, name: 'New York City, NY' },
-    london: { lat: 51.5074, lng: -0.1278, name: 'London, UK' },
-    tokyo: { lat: 35.6762, lng: 139.6503, name: 'Tokyo, Japan' },
     countryHub: { lat: country.defaultCity.lat, lng: country.defaultCity.lng, name: country.defaultCity.name },
   };
 
@@ -275,23 +275,23 @@ export const PrivacyStandbyView: React.FC<PrivacyStandbyViewProps> = ({
             </div>
 
             <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-stone-950 text-rose-400 border border-rose-900/60">
-              “RAPE” × 3
+              “BACHAO” / “RAPE” × 3
             </span>
           </div>
 
           {/* Phrase Step Badges */}
           <div className="grid grid-cols-3 gap-1.5 mb-2.5">
             <div className="bg-stone-950 p-1.5 rounded-xl border border-stone-800 text-center">
-              <div className="text-[9px] text-stone-500 font-mono font-bold">WORD 1</div>
-              <div className="text-xs font-black text-rose-400">“RAPE”</div>
+              <div className="text-[9px] text-stone-500 font-mono font-bold">CALL 1</div>
+              <div className="text-xs font-black text-rose-400">“BACHAO” / “RAPE”</div>
             </div>
             <div className="bg-stone-950 p-1.5 rounded-xl border border-stone-800 text-center">
-              <div className="text-[9px] text-stone-500 font-mono font-bold">WORD 2</div>
-              <div className="text-xs font-black text-rose-400">“RAPE”</div>
+              <div className="text-[9px] text-stone-500 font-mono font-bold">CALL 2</div>
+              <div className="text-xs font-black text-rose-400">“BACHAO” / “RAPE”</div>
             </div>
             <div className="bg-stone-950 p-1.5 rounded-xl border border-stone-800 text-center">
-              <div className="text-[9px] text-stone-500 font-mono font-bold">WORD 3</div>
-              <div className="text-xs font-black text-rose-400">“RAPE”</div>
+              <div className="text-[9px] text-stone-500 font-mono font-bold">CALL 3</div>
+              <div className="text-xs font-black text-rose-400">“BACHAO” / “RAPE”</div>
             </div>
           </div>
 
@@ -301,17 +301,16 @@ export const PrivacyStandbyView: React.FC<PrivacyStandbyViewProps> = ({
               id="btn-simulate-voice-trigger"
               type="button"
               onClick={() => {
-                // Import or trigger voiceTriggerService 3 times
                 import('../services/voiceTriggerService').then(({ voiceTriggerService }) => {
-                  voiceTriggerService.registerKeywordDetection('rape');
-                  setTimeout(() => voiceTriggerService.registerKeywordDetection('rape'), 200);
-                  setTimeout(() => voiceTriggerService.registerKeywordDetection('rape'), 400);
+                  voiceTriggerService.registerKeywordDetection('bachao');
+                  setTimeout(() => voiceTriggerService.registerKeywordDetection('bachao'), 200);
+                  setTimeout(() => voiceTriggerService.registerKeywordDetection('bachao'), 400);
                 });
               }}
               className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-rose-900/60 to-rose-800/60 hover:from-rose-800 hover:to-rose-700 text-white text-[11px] font-bold border border-rose-600/50 shadow flex items-center justify-center gap-1.5 transition active:scale-98 cursor-pointer"
             >
               <Radio className="w-3.5 h-3.5 text-rose-300" />
-              <span>TEST VOICE TRIGGER (“RAPE” × 3)</span>
+              <span>TEST VOICE TRIGGER (“BACHAO” × 3)</span>
             </button>
           </div>
         </div>

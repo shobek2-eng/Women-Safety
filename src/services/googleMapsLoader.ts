@@ -25,7 +25,13 @@ if (typeof window !== 'undefined') {
 let loadPromise: Promise<typeof google> | null = null;
 
 export async function loadGoogleMaps(): Promise<typeof google> {
-  if (typeof window !== 'undefined' && window.google && window.google.maps) {
+  // Only return immediately if Map constructor is actually available and ready
+  if (
+    typeof window !== 'undefined' &&
+    window.google &&
+    window.google.maps &&
+    typeof window.google.maps.Map === 'function'
+  ) {
     return window.google;
   }
 
@@ -41,12 +47,35 @@ export async function loadGoogleMaps(): Promise<typeof google> {
       libraries: ['places', 'geometry', 'marker'],
     });
 
-    await importLibrary('maps');
-    await importLibrary('marker');
+    // Import core libraries and ensure their constructors are bound to window.google.maps
+    const [mapsLib, markerLib, coreLib] = await Promise.all([
+      importLibrary('maps') as Promise<google.maps.MapsLibrary>,
+      importLibrary('marker') as Promise<google.maps.MarkerLibrary>,
+      importLibrary('core') as Promise<google.maps.CoreLibrary>,
+    ]);
+
+    if (typeof window !== 'undefined') {
+      window.google = window.google || ({} as any);
+      window.google.maps = window.google.maps || ({} as any);
+
+      if (mapsLib) {
+        Object.assign(window.google.maps, mapsLib);
+      }
+      if (markerLib) {
+        Object.assign(window.google.maps, markerLib);
+      }
+      if (coreLib) {
+        Object.assign(window.google.maps, coreLib);
+      }
+    }
+
+    if (!window.google?.maps?.Map || typeof window.google.maps.Map !== 'function') {
+      throw new Error('Google Maps Platform Map constructor is not available.');
+    }
 
     return window.google;
   })().catch((err) => {
-    console.error('Failed to load Google Maps Platform SDK:', err);
+    console.warn('Google Maps Platform load failed, activating offline/tactical radar fallback:', err);
     loadPromise = null;
     throw err;
   });
